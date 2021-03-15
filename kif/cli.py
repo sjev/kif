@@ -64,7 +64,7 @@ def add_files(src, dest, prefix, ext, start_nr):
             next_id += 1
 
             dest_file = dest / \
-                (dest_prefix + utils.clean_str(src_file.stem) + src_file.suffix.lower())
+                (dest_prefix + utils.clean_str(src_file.stem.replace(' ','_')) + src_file.suffix.lower())
 
             log.info(f'{src_file.as_posix()} -> {dest_file.as_posix()}')
             shutil.copy(src_file, dest_file)
