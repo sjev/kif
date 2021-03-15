@@ -4,19 +4,8 @@
 utility functions
 """
 
-import datetime as dt
-from yaml.loader import SafeLoader
-import click
-import yaml
 import os
-import pandas as pd
 from pathlib import Path
-from dataclasses import asdict, is_dataclass
-import re
-
-DATE_FMT = '%Y-%m-%d'
-
-
 import logging
 
 def clean_str(s):
@@ -62,24 +51,6 @@ def configLogging(logFile = None,
 
 
 
-def validate(s, regex):
-    """ validates a string against regular expression """
-
-    pattern = re.compile(regex)
-    res = pattern.match(s)
-    if not res:
-        raise ValueError(f"{s} is not valid")
-
-
-def timestamp(fmt=DATE_FMT+"_%H%M", offset_days=0):
-    t = dt.datetime.now() + dt.timedelta(days=offset_days)
-    return t.strftime(fmt)
-
-
-def date(offset=0):
-    return timestamp(DATE_FMT, offset)
-
-
 def get_next_id(path, prefix, n_digits = 4):
     """
     get next available number
@@ -111,8 +82,6 @@ def get_next_id(path, prefix, n_digits = 4):
     return max_idx + 1
         
     
-
-
 def md5(path):
     """ calculate MD5 checksum may provide a dir or a file"""
     import hashlib
