@@ -57,21 +57,22 @@ def add_files(src, dest, prefix, ext, start_nr):
         try:
             assert src_file.exists(), 'File not found'
             assert hsh.is_present(
-                src_file) == False, f'{src_file} is already in database.'
+                src_file) == False, f'Skipping {src_file} (already in database).'
 
             # generate prefix
             dest_prefix = prefix+'-%04d_' % next_id
             next_id += 1
 
             dest_file = dest / \
-                (dest_prefix + utils.clean_str(src_file.stem.replace(' ','_')) + src_file.suffix.lower())
+                (dest_prefix + utils.clean_str(src_file.stem.replace(' ', '_')
+                                               ) + src_file.suffix.lower())
 
             log.info(f'{src_file.as_posix()} -> {dest_file.as_posix()}')
             shutil.copy(src_file, dest_file)
             hsh.add(dest_file)
 
         except AssertionError as e:
-            echo(e)
+            log.warn(e)
 
 # -----------------------------------------
 
