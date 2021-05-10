@@ -4,6 +4,7 @@
 utility functions
 """
 
+import logging
 import datetime as dt
 from yaml.loader import SafeLoader
 import click
@@ -17,8 +18,6 @@ import re
 DATE_FMT = '%Y-%m-%d'
 
 
-import logging
-
 def clean_str(s):
     """ clean invalid characters """
     import string
@@ -26,40 +25,38 @@ def clean_str(s):
     return "".join(c for c in s if c in valid_chars)
 
 
-
-def configLogging(logFile = None, 
-                  fileLevel= logging.DEBUG, 
-                  consoleLevel = logging.INFO,
+def configLogging(logFile=None,
+                  fileLevel=logging.DEBUG,
+                  consoleLevel=logging.INFO,
                   filemode='w'):
     """ configure logging to console and file, returns root logger """
 
     fmt_file = "%(asctime)s  %(levelname)s [%(filename)s-%(lineno)d] - %(message)s"
-    fmt_console ="%(levelname)s - %(message)s"
-    
+    fmt_console = "%(levelname)s - %(message)s"
+
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
-    
+
     # Remove existing logging handlers
     log.handlers = []
     assert not log.hasHandlers(), 'Deleting logging handlers failed'
-    
+
     # file logging if requested
     if logFile is not None:
-        file = logging.FileHandler(filename = logFile, mode=filemode)
+        file = logging.FileHandler(filename=logFile, mode=filemode)
         file.setLevel(fileLevel)
         formatter = logging.Formatter(fmt_file, datefmt="%Y-%m-%d %H:%M:%S")
         file.setFormatter(formatter)
         log.addHandler(file)
-    
+
     console = logging.StreamHandler()
     console.setLevel(consoleLevel)
-    formatter = logging.Formatter(fmt_console,datefmt="%H:%M:%S")
+    formatter = logging.Formatter(fmt_console, datefmt="%H:%M:%S")
     console.setFormatter(formatter)
     log.addHandler(console)
-    
+
     log.debug("Set up logging to %s" % str(logFile))
     return log
-
 
 
 def validate(s, regex):
@@ -80,7 +77,7 @@ def date(offset=0):
     return timestamp(DATE_FMT, offset)
 
 
-def get_next_id(path, prefix, n_digits = 4):
+def get_next_id(path, prefix, n_digits=4):
     """
     get next available number
 
@@ -98,19 +95,17 @@ def get_next_id(path, prefix, n_digits = 4):
     """
     logging.debug('Finding next id')
     files = path.glob(prefix+'*')
-    
+
     max_idx = 0
-    
+
     for f in files:
         logging.debug(f.stem)
         s = f.stem.split('-')[1][:n_digits]
         i = int(s)
         if i > max_idx:
             max_idx = i
-            
+
     return max_idx + 1
-        
-    
 
 
 def md5(path):
@@ -140,7 +135,7 @@ def md5(path):
 
 
 class Hasher:
-    """ class to manage file hashes 
+    """ class to manage file hashes
     hashes are stored as  hash per line
 
     """
@@ -164,6 +159,7 @@ class Hasher:
         with self.data_file.open('a') as f:
             for l in hashes:
                 f.write(l+'\n')
+                self.hashes.append(l)
 
     def delete_hashes(self):
         """ clear all hashes """
