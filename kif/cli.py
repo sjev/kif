@@ -74,7 +74,19 @@ def add_files(src, dest, prefix, ext, start_nr):
         except AssertionError as e:
             log.warn(e)
 
+
+@click.command()
+@click.argument('dest')
+def rehash(dest):
+    """ rehash files in destination directory """
+
+    dest = Path(dest)
+    hsh = utils.Hasher(dest)
+    hsh.delete_hashes()
+    hsh.add(dest)
+
 # -----------------------------------------
 
 
 cli.add_command(add_files)
+cli.add_command(rehash)

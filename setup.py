@@ -3,7 +3,7 @@
 
 
 from setuptools import setup, find_packages
-import kif 
+import kif
 
 setup(
       name='kif',
