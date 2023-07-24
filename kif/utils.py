@@ -190,8 +190,6 @@ def add_file(
 ) -> int:
     """add a file to a destination folder, returns number id of file"""
 
-    log.info(f"Adding {src} to {dest}")
-
     # create destination folder if not exists
     dest.mkdir(parents=True, exist_ok=True)
 
@@ -213,6 +211,8 @@ def add_file(
 
     fname = dest_prefix + clean_str(src.stem.replace(" ", "_")) + src.suffix.lower()
     dest_file = dest / fname
+
+    log.info(f"{src.name} -> {dest_file.name}")
 
     shutil.copy(src, dest_file)
     hsh.add(dest_file)

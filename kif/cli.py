@@ -98,7 +98,9 @@ def add_files(dest_name: str, src: tuple, start_nr, debug: bool):
         try:
             src_file = Path(fname)
             assert src_file.exists()
-            utils.add_file(src_file, dest, start_nr=start_nr)
+            utils.add_file(
+                src_file, dest, prefix=cfg[dest_name].prefix, start_nr=start_nr
+            )
 
         except AssertionError as e:
             log.warning(e)
