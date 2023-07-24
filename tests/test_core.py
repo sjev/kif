@@ -57,7 +57,7 @@ def test_dest1():
 
     config = utils.load_config()
 
-    dest = Path(config[0].path)
+    dest = Path(config["dest1"].path)
 
     # remove dest folder if exists
     if dest.exists():
@@ -81,7 +81,8 @@ def test_dest2():
     """test adding files with prefix to destination 2"""
     config = utils.load_config()
 
-    dest = Path(config[1].path)
+    dest = Path(config["dest2"].path)
+    prefix = config["dest2"].prefix
 
     # remove dest folder if exists
     if dest.exists():
@@ -93,9 +94,14 @@ def test_dest2():
 
     src = SRC_DIR / "test_1.txt"
 
-    nr = utils.add_file(src, dest)
+    nr = utils.add_file(src, dest, prefix=prefix)
     assert nr == 1
 
     # try to add same file again and check for assertion error
     with pytest.raises(AssertionError):
         utils.add_file(src, dest)
+
+    # add another file
+    src = SRC_DIR / "test_2.txt"
+    nr = utils.add_file(src, dest, prefix=prefix)
+    assert nr == 2

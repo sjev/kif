@@ -32,7 +32,6 @@ def clean_str(s):
     return "".join(c for c in s if c in valid_chars)
 
 
-
 def get_next_id(path: Path, prefix: str, n_digits=4) -> int:
     """
     get next available number
@@ -135,7 +134,7 @@ def get_config_path() -> Path:
     return Path.home() / ".kif" / "kif.yaml"
 
 
-def load_config(path: Optional[Path] = None) -> list:
+def load_config(path: Optional[Path] = None) -> dict:
     """load config file"""
 
     if path is None:
@@ -148,10 +147,10 @@ def load_config(path: Optional[Path] = None) -> list:
     with path.open("r") as fid:
         data = yaml.load(fid, Loader=yaml.FullLoader)
 
-    return [Destination(**d) for d in data]
+    return {k: Destination(name=k, **v) for k, v in data.items()}
 
 
-def create_example_config(path: Optional[Path] = None):
+def create_example_config(path: Optional[Path] = None) -> Path:
     """create example yaml config file"""
 
     if path is None:
@@ -165,15 +164,17 @@ def create_example_config(path: Optional[Path] = None):
     if not path.parent.exists():
         path.parent.mkdir(parents=True)
 
-    item1 = {"name": "dest1", "path": "/tmp/kif/data"}
-    item2 = {"name": "dest2", "path": "/tmp/kif/data2", "prefix": "INR"}
+    item1 = {"path": "/tmp/kif/data"}
+    item2 = {"path": "/tmp/kif/data2", "prefix": "INR"}
 
-    data = [item1, item2]
+    data = {"dest1": item1, "dest2": item2}
 
     log.info(f"Creating config file {path}")
 
     with path.open("w") as fid:
         yaml.dump(data, fid)
+
+    return path
 
 
 def add_file(

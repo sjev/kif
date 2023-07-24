@@ -60,61 +60,39 @@ def ls(name: str):
         echo(f.name)
 
 
+@cli.command()
+def init():
+    """create sample config file"""
+    try:
+        p = utils.create_example_config()
+        echo(f"Created {p}")
+    except FileExistsError as e:
+        echo(e)
+
+
 @click.command("add")
 @click.argument("src")
-@click.argument("dest")
-@click.option(
-    "--prefix",
-    default="INR21",
-    help="Filename prefix, will be automatically added before number",
-)
-@click.option("--ext", default="pdf", help="filename extension")
+@click.argument("dest_name")
 @click.option(
     "--start_nr", default=None, help="starting nubering at this number", type=int
 )
-def add_files(src, dest, prefix, ext, start_nr):
-    """add files to a destination folder"""
+def add_files(src: str, dest_name: str, start_nr):
+    """add files to a destination folder src can be a file or glob pattern"""
 
-    log.debug(
-        f"Adding files from {src} to {dest} with extension {ext}, prefix: {prefix}, start_nr: {start_nr}"
-    )
+    cfg = utils.load_config()
 
-    src = Path(src)
+    log.debug(f"Adding file(s) {src} to {dest}")
     dest = Path(dest)
 
-    files = [f for f in src.glob("*") if f.suffix.lower()[1:] == ext]
-
-    log.info("Found %i files" % len(files))
-
-    hsh = utils.Hasher(dest)
-
-    if start_nr is None:
-        next_id = utils.get_next_id(dest, prefix)
+    if "*" in src:  # working with glob
+        files = [f for f in Path.glob(src)]
+        log.info("Found %i files" % len(files))
     else:
-        next_id = start_nr
-
-    log.info("Next number: %i" % next_id)
+        files = [Path(src)]
 
     for src_file in files:
         try:
-            assert src_file.exists(), "File not found"
-            assert (
-                hsh.is_present(src_file) == False
-            ), f"Skipping {src_file} (already in database)."
-
-            # generate prefix
-            dest_prefix = prefix + "-%04d_" % next_id
-            next_id += 1
-
-            dest_file = dest / (
-                dest_prefix
-                + utils.clean_str(src_file.stem.replace(" ", "_"))
-                + src_file.suffix.lower()
-            )
-
-            log.info(f"{src_file.as_posix()} -> {dest_file.as_posix()}")
-            shutil.copy(src_file, dest_file)
-            hsh.add(dest_file)
+            print(src_file)
 
         except AssertionError as e:
             log.warning(e)
