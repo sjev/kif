@@ -3,14 +3,26 @@
 """
 utility functions
 """
-from typing import Optional
 import hashlib
 import logging
+import shutil
 import string
 from pathlib import Path
-
+from typing import Optional
+from dataclasses import dataclass
 
 import yaml  # type: ignore
+
+log = logging.getLogger("utils")
+
+
+@dataclass
+class Destination:
+    """destination folder config"""
+
+    name: str
+    path: str
+    prefix: str = ""
 
 
 def clean_str(s):
@@ -84,7 +96,7 @@ def get_next_id(path: Path, prefix: str, n_digits=4) -> int:
     return max_idx + 1
 
 
-def md5(path):
+def md5(path: Path):
     """calculate MD5 checksum may provide a dir or a file"""
 
     def hash_file(p):
@@ -115,7 +127,7 @@ class Hasher:
 
     """
 
-    def __init__(self, path):
+    def __init__(self, path: Path):
         self.data_file = path / ".hashes"
 
         if self.data_file.exists():
@@ -126,7 +138,7 @@ class Hasher:
         else:
             self.hashes = []
 
-    def add(self, path):
+    def add(self, path: Path):
         """add hashes of a file or path"""
 
         hashes = md5(path)
@@ -141,10 +153,13 @@ class Hasher:
         if self.data_file.exists():
             self.data_file.unlink()
 
-    def is_present(self, path):
+    def is_present(self, path: Path):
         """check if a file is present in hashes"""
+
         hsh = md5(path)[0]
-        return hsh in self.hashes
+        present = hsh in self.hashes
+        log.debug(f"Checking {path} in {self.data_file}: {present}")
+        return present
 
 
 def get_config_path() -> Path:
@@ -165,7 +180,7 @@ def load_config(path: Optional[Path] = None) -> list:
     with path.open("r") as fid:
         data = yaml.load(fid, Loader=yaml.FullLoader)
 
-    return data
+    return [Destination(**d) for d in data]
 
 
 def create_example_config(path: Optional[Path] = None):
@@ -182,12 +197,47 @@ def create_example_config(path: Optional[Path] = None):
     if not path.parent.exists():
         path.parent.mkdir(parents=True)
 
-    item1 = {"name": "dest1", "path": "/tmp/kif/data", "prefix": None}
+    item1 = {"name": "dest1", "path": "/tmp/kif/data"}
     item2 = {"name": "dest2", "path": "/tmp/kif/data2", "prefix": "INR"}
 
     data = [item1, item2]
 
-    print(f"Creating config file {path}")
+    log.info(f"Creating config file {path}")
 
     with path.open("w") as fid:
         yaml.dump(data, fid)
+
+
+def add_file(
+    src: Path, dest: Path, prefix: str = "", start_nr: Optional[int] = None
+) -> int:
+    """add a file to a destination folder, returns number id of file"""
+
+    log.info(f"Adding {src} to {dest}")
+
+    # create destination folder if not exists
+    dest.mkdir(parents=True, exist_ok=True)
+
+    assert src.exists(), "File not found"
+
+    hsh = Hasher(dest)
+    assert not hsh.is_present(src), f"File {src} already in database."
+
+    if start_nr is None:
+        next_id = get_next_id(dest, prefix)
+    else:
+        next_id = start_nr
+
+    # generate prefix
+    if prefix:
+        dest_prefix = prefix + "-%04d_" % next_id
+    else:
+        dest_prefix = "%04d_" % next_id
+
+    fname = dest_prefix + clean_str(src.stem.replace(" ", "_")) + src.suffix.lower()
+    dest_file = dest / fname
+
+    shutil.copy(src, dest_file)
+    hsh.add(dest_file)
+
+    return next_id
