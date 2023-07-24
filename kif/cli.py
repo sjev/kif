@@ -30,10 +30,11 @@ def cli():
 def config():
     """show configuraton"""
     cfg = utils.load_config()
+    print(cfg)
 
     echo("name\tpath\tprefix")
     echo("------------------------------------------")
-    for dest in cfg:
+    for _, dest in cfg.items():
         echo(f"{dest.name}\t{dest.path}\tprefix={dest.prefix}")
 
 
