@@ -1,0 +1,6 @@
+- name: dest1
+  path: /tmp/kif/data
+  prefix: null
+- name: dest2
+  path: /tmp/kif/data2
+  prefix: INR

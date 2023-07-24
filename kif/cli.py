@@ -5,18 +5,19 @@ main cli application
 
 @author: jev
 """
-import shutil
-from click import echo
-import click
-from pathlib import Path
-import kif  # app version is defined in __init__.py
 import logging
+from pathlib import Path
+
+import click
+from click import echo
+
+import kif  # app version is defined in __init__.py
 import kif.utils as utils
 
-utils.configLogging(consoleLevel=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
-log = logging.getLogger('cli')
+log = logging.getLogger("cli")
 
 
 @click.group()
@@ -25,65 +26,94 @@ def cli():
     pass
 
 
-@click.command('add')
-@click.argument('src')
-@click.argument('dest')
-@click.option('--prefix', default='INR21', help='Filename prefix, will be automatically added before number')
-@click.option('--ext', default='pdf', help='filename extension')
-@click.option('--start_nr', default=None, help='starting nubering at this number', type=int)
-def add_files(src, dest, prefix, ext, start_nr):
-    """ add files to a destination folder """
+@cli.command()
+def config():
+    """show configuraton"""
+    cfg = utils.load_config()
 
-    log.debug(
-        f'Adding files from {src} to {dest} with extension {ext}, prefix: {prefix}, start_nr: {start_nr}')
+    echo("name\tpath\tprefix")
+    echo("------------------------------------------")
+    for dest in cfg:
+        echo(f"{dest.name}\t{dest.path}\tprefix={dest.prefix}")
 
-    src = Path(src)
-    dest = Path(dest)
 
-    files = [f for f in src.glob('*') if f.suffix.lower()[1:] == ext]
+@cli.command()
+@click.argument("name")
+def ls(name: str):
+    """list files in destination folder"""
 
-    log.info('Found %i files' % len(files))
+    cfg = utils.load_config()
 
-    hsh = utils.Hasher(dest)
+    names = cfg.keys()
+    if name not in names:
+        echo(f"Destination {name} not found.")
+        echo("Available destinations:")
+        echo("\n".join(names))
+        return
 
-    if start_nr is None:
-        next_id = utils.get_next_id(dest, prefix)
-    else:
-        next_id = start_nr
+    dest = cfg[name]
 
-    log.info('Next number: %i' % next_id)
+    echo(f"Listing files in {dest.path}")
 
-    for src_file in files:
+    files = [f for f in Path(dest.path).glob("*")]
+    files.sort()
+
+    for f in files:
+        echo(f.name)
+
+
+@cli.command()
+def init():
+    """create sample config file"""
+    try:
+        p = utils.create_example_config()
+        echo(f"Created {p}")
+    except FileExistsError as e:
+        echo(e)
+
+
+@click.command("add")
+@click.argument("dest_name")
+@click.argument("src", nargs=-1)
+@click.option(
+    "--start_nr", default=None, help="starting nubering at this number", type=int
+)
+@click.option("--debug", is_flag=True, help="debug mode")
+def add_files(dest_name: str, src: tuple, start_nr, debug: bool):
+    """add files to a destination folder src can be a file or glob pattern"""
+    if debug:
+        log.setLevel(logging.DEBUG)
+
+    cfg = utils.load_config()
+    if dest_name not in cfg:
+        echo(f"Destination {dest_name} not found.")
+        echo("Available destinations:")
+        echo("\n".join(cfg.keys()))
+        return
+
+    log.debug(f"Adding file(s) {src} to {dest_name}")
+    dest = Path(cfg[dest_name].path)
+
+    for fname in src:
         try:
-            assert src_file.exists(), 'File not found'
-            assert hsh.is_present(
-                src_file) == False, f'Skipping {src_file} (already in database).'
-
-            # generate prefix
-            dest_prefix = prefix+'-%04d_' % next_id
-            next_id += 1
-
-            dest_file = dest / \
-                (dest_prefix + utils.clean_str(src_file.stem.replace(' ', '_')
-                                               ) + src_file.suffix.lower())
-
-            log.info(f'{src_file.as_posix()} -> {dest_file.as_posix()}')
-            shutil.copy(src_file, dest_file)
-            hsh.add(dest_file)
+            src_file = Path(fname)
+            assert src_file.exists()
+            utils.add_file(src_file, dest, start_nr=start_nr)
 
         except AssertionError as e:
-            log.warn(e)
+            log.warning(e)
 
 
 @click.command()
-@click.argument('dest')
+@click.argument("dest")
 def rehash(dest):
-    """ rehash files in destination directory """
+    """rehash files in destination directory"""
 
     dest = Path(dest)
     hsh = utils.Hasher(dest)
     hsh.delete_hashes()
     hsh.add(dest)
+
 
 # -----------------------------------------
 
