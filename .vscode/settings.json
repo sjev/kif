@@ -1,0 +1,30 @@
+{
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#808079",
+    "titleBar.inactiveBackground": "#808079",
+    "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveForeground": "#ffffff"
+  },
+
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.linting.flake8Enabled": false,
+  "python.linting.flake8Args": ["--max-line-length=88"],
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.formatting.provider": "none",
+  "yaml.customTags": [
+    "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format"
+  ],
+  "fileHeaderComment.parameter": {
+    "*": {
+      "company": "GreenRobotics",
+      "pybang": "#!/usr/bin/env python3"
+    }
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
+}
