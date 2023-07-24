@@ -32,38 +32,6 @@ def clean_str(s):
     return "".join(c for c in s if c in valid_chars)
 
 
-def configLogging(
-    logFile=None, fileLevel=logging.DEBUG, consoleLevel=logging.INFO, filemode="w"
-):
-    """configure logging to console and file, returns root logger"""
-
-    fmt_file = "%(asctime)s  %(levelname)s [%(filename)s-%(lineno)d] - %(message)s"
-    fmt_console = "%(levelname)s - %(message)s"
-
-    log = logging.getLogger()
-    log.setLevel(logging.DEBUG)
-
-    # Remove existing logging handlers
-    log.handlers = []
-    assert not log.hasHandlers(), "Deleting logging handlers failed"
-
-    # file logging if requested
-    if logFile is not None:
-        file = logging.FileHandler(filename=logFile, mode=filemode)
-        file.setLevel(fileLevel)
-        formatter = logging.Formatter(fmt_file, datefmt="%Y-%m-%d %H:%M:%S")
-        file.setFormatter(formatter)
-        log.addHandler(file)
-
-    console = logging.StreamHandler()
-    console.setLevel(consoleLevel)
-    formatter = logging.Formatter(fmt_console, datefmt="%H:%M:%S")
-    console.setFormatter(formatter)
-    log.addHandler(console)
-
-    log.debug(f"Set up logging to {logFile}")
-    return log
-
 
 def get_next_id(path: Path, prefix: str, n_digits=4) -> int:
     """

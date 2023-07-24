@@ -13,7 +13,7 @@ import kif  # app version is defined in __init__.py
 import logging
 import kif.utils as utils
 
-utils.configLogging(consoleLevel=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 
 log = logging.getLogger("cli")
@@ -27,11 +27,13 @@ def cli():
 
 @cli.command()
 def config():
-    """List configuraton"""
+    """show configuraton"""
     cfg = utils.load_config()
 
+    echo("name\tpath\tprefix")
+    echo("------------------------------------------")
     for dest in cfg:
-        echo(f"{dest.name} ,{dest.path} prefix={dest.prefix}")
+        echo(f"{dest.name}\t{dest.path}\tprefix={dest.prefix}")
 
 
 @click.command("add")
