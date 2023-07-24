@@ -36,6 +36,30 @@ def config():
         echo(f"{dest.name}\t{dest.path}\tprefix={dest.prefix}")
 
 
+@cli.command()
+@click.argument("name")
+def ls(name: str):
+    """list files in destination folder"""
+
+    cfg = utils.load_config()
+
+    names = [d.name for d in cfg]
+    if name not in names:
+        echo(f"Destination {name} not found.")
+        echo("Available destinations:")
+        echo("\n".join(names))
+        return
+
+    dest = [d for d in cfg if d.name == name][0]
+
+    echo(f"Listing files in {dest.path}")
+
+    files = [f for f in Path(dest.path).glob("*")]
+
+    for f in files:
+        echo(f.name)
+
+
 @click.command("add")
 @click.argument("src")
 @click.argument("dest")

@@ -91,7 +91,7 @@ def test_dest2():
     hsh = utils.Hasher(dest)
     assert hsh.hashes == []
 
-    src = SRC_DIR / "test_0.txt"
+    src = SRC_DIR / "test_1.txt"
 
     nr = utils.add_file(src, dest)
     assert nr == 1
