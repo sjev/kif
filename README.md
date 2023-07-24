@@ -1,5 +1,7 @@
 # kif
 
+![](misc/kif-picture.webp)
+
 file database assistant
 
 **kif** is a simple tool that copies files from one location to another. While doing this, `kif` makes sure that
@@ -14,7 +16,7 @@ file database assistant
 - create example configuration with `kif init`
 - configuration is saved in `~/.kif/kif.yaml` . Each entry has a name, destination and optional prefix.
 
-`kif add FILE DEST_NAME` will copy `FILE` (or pattern) to destination name in `kif.yaml`
+`kif add DEST_NAME FILE` will copy `FILE` (or pattern) to destination name in `kif.yaml`
 
 ## Installation
 
