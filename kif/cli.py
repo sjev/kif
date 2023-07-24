@@ -30,7 +30,6 @@ def cli():
 def config():
     """show configuraton"""
     cfg = utils.load_config()
-    print(cfg)
 
     echo("name\tpath\tprefix")
     echo("------------------------------------------")
