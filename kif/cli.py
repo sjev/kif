@@ -5,15 +5,16 @@ main cli application
 
 @author: jev
 """
-import shutil
-from click import echo
-import click
-from pathlib import Path
-import kif  # app version is defined in __init__.py
 import logging
+from pathlib import Path
+
+import click
+from click import echo
+
+import kif  # app version is defined in __init__.py
 import kif.utils as utils
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 log = logging.getLogger("cli")
@@ -43,18 +44,19 @@ def ls(name: str):
 
     cfg = utils.load_config()
 
-    names = [d.name for d in cfg]
+    names = cfg.keys()
     if name not in names:
         echo(f"Destination {name} not found.")
         echo("Available destinations:")
         echo("\n".join(names))
         return
 
-    dest = [d for d in cfg if d.name == name][0]
+    dest = cfg[name]
 
     echo(f"Listing files in {dest.path}")
 
     files = [f for f in Path(dest.path).glob("*")]
+    files.sort()
 
     for f in files:
         echo(f.name)
@@ -71,28 +73,32 @@ def init():
 
 
 @click.command("add")
-@click.argument("src")
 @click.argument("dest_name")
+@click.argument("src", nargs=-1)
 @click.option(
     "--start_nr", default=None, help="starting nubering at this number", type=int
 )
-def add_files(src: str, dest_name: str, start_nr):
+@click.option("--debug", is_flag=True, help="debug mode")
+def add_files(dest_name: str, src: tuple, start_nr, debug: bool):
     """add files to a destination folder src can be a file or glob pattern"""
+    if debug:
+        log.setLevel(logging.DEBUG)
 
     cfg = utils.load_config()
+    if dest_name not in cfg:
+        echo(f"Destination {dest_name} not found.")
+        echo("Available destinations:")
+        echo("\n".join(cfg.keys()))
+        return
 
-    log.debug(f"Adding file(s) {src} to {dest}")
-    dest = Path(dest)
+    log.debug(f"Adding file(s) {src} to {dest_name}")
+    dest = Path(cfg[dest_name].path)
 
-    if "*" in src:  # working with glob
-        files = [f for f in Path.glob(src)]
-        log.info("Found %i files" % len(files))
-    else:
-        files = [Path(src)]
-
-    for src_file in files:
+    for fname in src:
         try:
-            print(src_file)
+            src_file = Path(fname)
+            assert src_file.exists()
+            utils.add_file(src_file, dest, start_nr=start_nr)
 
         except AssertionError as e:
             log.warning(e)

@@ -55,8 +55,16 @@ def get_next_id(path: Path, prefix: str, n_digits=4) -> int:
 
     for f in files:
         logging.debug(f.stem)
-        s = f.stem.split("-")[1][:n_digits]
-        i = int(s)
+        if prefix:
+            s = f.stem.split("-")[1][:n_digits]
+        else:
+            s = f.stem[:n_digits]
+
+        try:
+            i = int(s)
+        except ValueError:  # not a number
+            continue
+
         if i > max_idx:
             max_idx = i
 
